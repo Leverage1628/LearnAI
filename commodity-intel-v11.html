@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COMMODITY INTEL v11 — Rebuild Sequence</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+  :root{--bg:#0a0c0f;--surface:#111318;--border:#1e2229;--gold:#c9a84c;--green:#2ecc71;--red:#e74c3c;--blue:#4a9eff;--purple:#a78bfa;--orange:#e8873a;--dim:#4a5060;--text:#d4d8e0;--bright:#f0f2f5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.5}
+  .header{border-bottom:1px solid var(--border);padding:16px 20px;display:flex;justify-content:space-between}
+  .header-title{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.15em;color:var(--gold);text-transform:uppercase}
+  .header-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);margin-top:2px}
+  .header-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);text-align:right}
+  .section-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--dim);text-transform:uppercase;padding:0 20px;margin:20px 0 10px}
+  .divider{height:1px;background:var(--border);margin:16px 20px}
+  .spacer{height:16px}
+
+  .state{margin:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 14px}
+  .state-h{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+  .srow{display:grid;grid-template-columns:1fr auto;gap:10px;padding:5px 0;border-bottom:1px solid rgba(30,34,41,.7);font-size:11px;align-items:baseline}
+  .srow:last-child{border-bottom:none}
+  .sv{font-family:'IBM Plex Mono',monospace;font-weight:600;white-space:nowrap;color:var(--bright)}
+  .sv.up{color:var(--green)}
+
+  .stage{margin:0 20px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .st-h{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .st-n{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--bright);letter-spacing:.04em}
+  .st-sub{font-size:10px;color:var(--dim);margin-top:2px}
+  .st-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;border-radius:3px;white-space:nowrap}
+  .g1{background:rgba(46,204,113,.14);color:var(--green)}
+  .g2t{background:rgba(201,168,76,.14);color:var(--gold)}
+  .g3{background:rgba(232,135,58,.14);color:var(--orange)}
+  .g4{background:rgba(74,158,255,.14);color:var(--blue)}
+
+  .pos{display:grid;grid-template-columns:70px 1fr 46px;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(30,34,41,.7);font-size:11px}
+  .pos:last-of-type{border-bottom:1px solid var(--border)}
+  .pt{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--gold)}
+  .pt.held{color:var(--green)}
+  .pt.held::after{content:" ●";font-size:8px}
+  .psub{font-size:9px;color:var(--dim);margin-top:1px;line-height:1.3}
+  .pb{line-height:1.55}
+  .pb strong{color:var(--bright)}
+  .pw{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--bright);text-align:right}
+  .st-why{padding:10px 14px;font-size:11px;line-height:1.6;background:rgba(74,158,255,.04)}
+  .st-why strong{color:var(--blue)}
+
+  .note{margin:0 20px;background:rgba(231,76,60,.06);border-left:3px solid var(--red);padding:10px 12px;border-radius:0 4px 4px 0;font-size:11px;line-height:1.6}
+  .note strong{color:var(--red)}
+  .note-b{background:rgba(74,158,255,.06);border-left-color:var(--blue)}
+  .note-b strong{color:var(--blue)}
+  .note-g{background:rgba(201,168,76,.07);border-left-color:var(--gold)}
+  .note-g strong{color:var(--gold)}
+
+  .rules{margin:0 20px 30px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 14px}
+  .ritem{display:grid;grid-template-columns:20px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:11px}
+  .ritem:last-child{border-bottom:none}
+  .rnum{font-family:'IBM Plex Mono',monospace;color:var(--gold);font-weight:600}
+  .rtext{line-height:1.55}
+  .rtext strong{color:var(--bright)}
+
+  .tgt{margin:0 20px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px}
+  .trow{margin-bottom:11px}
+  .trow:last-child{margin-bottom:0}
+  .tlab{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px}
+  .tlab span:last-child{font-family:'IBM Plex Mono',monospace;color:var(--dim)}
+  .ttrack{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+  .tfill{height:100%;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Commodity Intel v11</div>
+    <div class="header-sub">Rebuild Sequence · Robinhood Universe</div>
+  </div>
+  <div class="header-date">BUILD<br>Aug 14, 2026<br>Tactical</div>
+</div>
+
+<!-- STATE -->
+<div class="state">
+  <div class="state-h">◆ Starting Position</div>
+  <div class="srow"><div>Robinhood book</div><div class="sv up">$66.76 · +13.15% all time</div></div>
+  <div class="srow"><div>MCHI — 0.5136 shares</div><div class="sv">$54.60</div></div>
+  <div class="srow"><div>CDE — Coeur Mining</div><div class="sv">$18.84</div></div>
+  <div class="srow"><div>Kraken — liquidated, earmarked to exit</div><div class="sv">$100.06 cash</div></div>
+  <div class="srow"><div>Positions closed in consolidation</div><div class="sv">UUUU · FCX · ASHR · ET · ARQQ · USAS</div></div>
+</div>
+
+<div class="note-b note">
+  <strong>What consolidation actually bought you:</strong> Kraken's stock shelf was narrow. Robinhood reaches REXC, COPX, MP, NIKL, GOLD, AU, GFI, AFK, EZA, ITA, XME — most of the v9 universe map you previously couldn't touch. <strong>The Tier 3 Africa sleeve becomes buyable for the first time.</strong> The framework didn't shrink; its addressable universe roughly doubled.
+</div>
+
+<!-- ============ SEQUENCE ============ -->
+<div class="section-label">The Rebuild Sequence — Four Stages</div>
+
+<div class="stage">
+  <div class="st-h">
+    <div><div class="st-n">STAGE 1 · RE-ANCHOR</div><div class="st-sub">Restore the two A− positions you sold</div></div>
+    <div class="st-tag g1">FIRST</div>
+  </div>
+  <div class="pos">
+    <div><div class="pt">FCX</div><div class="psub">Freeport-McMoRan</div></div>
+    <div class="pb">Graded <strong>A−</strong>: owns processing ($3.7B Indonesian smelter), profitable, self-funding, and <strong>wins under the substitution stress test</strong> — magnet-free motors use copper windings. Copper is the one input every scenario needs more of. IBD flagged a buy signal Aug 9. <strong>It was your most undersized position; don't repeat that.</strong></div>
+    <div class="pw">20%</div>
+  </div>
+  <div class="pos">
+    <div><div class="pt">UUUU</div><div class="psub">Energy Fuels</div></div>
+    <div class="pb">Graded <strong>A−</strong>: mine-to-magnet, and the Utah plant under construction since Jul 29 makes <strong>terbium and dysprosium</strong> — the heavy side where geology, not capital, is the constraint. CEO bought $967,920 at $13.08 with zero insider selling. <strong>Re-entry is below where you first held it.</strong> Carries the rate-sensitivity flag: unprofitable + large buildout.</div>
+    <div class="pw">10%</div>
+  </div>
+  <div class="st-why"><strong>Why first:</strong> these are the highest-scoring names in the framework and you already did the diligence. Rebuilding starts by restoring what the analysis already validated — not by hunting new ideas.</div>
+</div>
+
+<div class="stage">
+  <div class="st-h">
+    <div><div class="st-n">STAGE 2 · FIX THE C+ PROBLEM</div><div class="st-sub">Replace broad China beta with the actual thesis</div></div>
+    <div class="st-tag g2t">SECOND</div>
+  </div>
+  <div class="pos">
+    <div><div class="pt">REXC</div><div class="psub">Sprott Rare Earths Ex-China</div></div>
+    <div class="pb"><strong>The v7 thesis in one ticker.</strong> Only rare earth fund concentrated almost entirely in rare earth companies with <strong>no China-listed holdings</strong> — it owns the capacity being built, excludes the incumbent everyone is routing around. <em>Newest fund on the list: check AUM and spreads before sizing.</em></div>
+    <div class="pw">10%</div>
+  </div>
+  <div class="pos">
+    <div><div class="pt held">MCHI</div><div class="psub">held — consider trimming</div></div>
+    <div class="pb">Graded <strong>C+</strong>. Broad China with tech/consumer tilt (Tencent, Alibaba) — it's China <em>beta</em>, not China <em>commodity</em> exposure. If you want the processing-hegemon leg, ASHR was always the more precise instrument. <strong>Decide deliberately whether this is a thesis position or a market position.</strong></div>
+    <div class="pw">≤10%</div>
+  </div>
+  <div class="st-why"><strong>Why second:</strong> your single largest holding currently scores C+. Upgrading exposure quality matters more than adding new names — and REXC does in one ticker what MCHI can't do at all.</div>
+</div>
+
+<div class="stage">
+  <div class="st-h">
+    <div><div class="st-n">STAGE 3 · FILL THE EMPTY TIER</div><div class="st-sub">Africa — 0% held, best-performing markets of 2026</div></div>
+    <div class="st-tag g3">THIRD</div>
+  </div>
+  <div class="pos">
+    <div><div class="pt">GOLD / AU</div><div class="psub">Barrick / AngloGold</div></div>
+    <div class="pb">Barrick: Q1 revenue +67%, earnings +256%, $3B buyback, DRC Kibali mine. AngloGold: earnings +187%, FCF +190%, across DRC/Tanzania/Ghana/Guinea. <strong>Buyable today, no access problem.</strong> Note: same Clock A as CDE — size accordingly, don't double the gold bet unknowingly.</div>
+    <div class="pw">8%</div>
+  </div>
+  <div class="pos">
+    <div><div class="pt">AFK / EZA</div><div class="psub">VanEck Africa / iShares S. Africa</div></div>
+    <div class="pb">The only pan-African wrapper plus the most liquid Africa ETF. Nigeria ran <strong>+33.5%</strong>, Tanzania +33%, Egypt +20.5% in 2026 — beating both MSCI Frontier (6.6%) and EM (13.9%). <strong>Verify first:</strong> AFK's expense ratio is reported as both 0.77% and 1.31%, AUM ~$49M means wide spreads.</div>
+    <div class="pw">5%</div>
+  </div>
+  <div class="st-why"><strong>Why third:</strong> the only tier at zero, and it hosts genuinely uncorrelated drivers — Nigeria's run had nothing to do with Washington or Beijing. But access friction is real, so it comes after the high-conviction core is set.</div>
+</div>
+
+<div class="stage">
+  <div class="st-h">
+    <div><div class="st-n">STAGE 4 · OPTIONAL EXTENSIONS</div><div class="st-sub">Only if the core is properly sized first</div></div>
+    <div class="st-tag g4">LAST</div>
+  </div>
+  <div class="pos">
+    <div><div class="pt">MP</div><div class="psub">MP Materials</div></div>
+    <div class="pb">Has the <strong>$110/kg DoD price floor UUUU lacks</strong> — the single structural advantage over your Stage 1 name. DoD is largest shareholder; $500M Apple recycled-magnet deal. Light-REE weighted, so it complements rather than duplicates UUUU's heavy side.</div>
+    <div class="pw">5%</div>
+  </div>
+  <div class="pos">
+    <div><div class="pt">COPX / NIKL</div><div class="psub">copper miners / nickel miners</div></div>
+    <div class="pb">COPX is the largest critical-minerals ETF (~$7.2B) — basket version of FCX. NIKL is the <strong>Indonesia expression</strong> you had no way to own: the proof-of-concept case, 62%→70% of global mined nickel.</div>
+    <div class="pw">5%</div>
+  </div>
+  <div class="pos">
+    <div><div class="pt">ITA / GEV</div><div class="psub">defense ETF / grid</div></div>
+    <div class="pb">The instrument-sequence theaters. <strong>Honest caveat: both already ran hard</strong> — GEV +69% YTD, and defense is priced for record budgets. You'd be buying after the repricing, not before.</div>
+    <div class="pw">5%</div>
+  </div>
+  <div class="st-why"><strong>Why last:</strong> every one of these is a good idea that becomes a bad idea if it fragments the book again. Stage 4 only exists if Stages 1–3 are sized meaningfully first.</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- TARGET SHAPE -->
+<div class="section-label">Target Tier Shape (v5 rules, applied)</div>
+<div class="tgt">
+  <div class="trow"><div class="tlab"><span>Tier 1 · Developed Core — FCX, CDE, GOLD/AU, COPX</span><span>50–60%</span></div><div class="ttrack"><div class="tfill" style="width:55%;background:var(--blue)"></div></div></div>
+  <div class="trow"><div class="tlab"><span>Tier 2 · Emerging Majors — MCHI, REXC, MP</span><span>20–30%</span></div><div class="ttrack"><div class="tfill" style="width:25%;background:var(--gold)"></div></div></div>
+  <div class="trow"><div class="tlab"><span>Tier 3 · African Frontier — AFK, EZA</span><span>5–10%</span></div><div class="ttrack"><div class="tfill" style="width:8%;background:var(--orange)"></div></div></div>
+  <div class="trow"><div class="tlab"><span>Tier 4 · Speculative — UUUU</span><span>5% max</span></div><div class="ttrack"><div class="tfill" style="width:5%;background:var(--red)"></div></div></div>
+</div>
+
+<div class="spacer"></div>
+<div class="note-g note">
+  <strong>The honest tension in this plan:</strong> UUUU grades A− on thesis quality but sits in Tier 4 on risk — unprofitable, 19% shorted, no price floor. Those aren't contradictory: <em>best idea</em> and <em>most fragile balance sheet</em> can be the same name. The tier cap exists precisely for that case. If conviction says go bigger than 5%, that's a deliberate override of your own rule — fine to make, but make it knowingly rather than by drift.
+</div>
+
+<div class="divider"></div>
+
+<!-- EXECUTION RULES -->
+<div class="section-label">Execution Rules for the Rebuild</div>
+<div class="rules">
+  <div class="ritem"><div class="rnum">01</div><div class="rtext"><strong>Percentages, not dollar amounts.</strong> This plan works at $67, $167, or $1,670. Sizing by share of book keeps it valid as capital changes.</div></div>
+  <div class="ritem"><div class="rnum">02</div><div class="rtext"><strong>Four positions sized well beat twelve sized poorly.</strong> The fragmentation flaw solved itself in the liquidation — don't rebuild it. If a name can't justify 5%+, it doesn't enter yet.</div></div>
+  <div class="ritem"><div class="rnum">03</div><div class="rtext"><strong>Stage order is the point.</strong> Don't skip to Stage 4 because a headline is exciting. Anchor first, upgrade quality second, fill the empty tier third, extend last.</div></div>
+  <div class="ritem"><div class="rnum">04</div><div class="rtext"><strong>Verify before buying anything in Stage 3.</strong> AFK's expense ratio is reported inconsistently and it's a small fund — check the fund page directly. Wide spreads eat small positions.</div></div>
+  <div class="ritem"><div class="rnum">05</div><div class="rtext"><strong>Two clocks, checked separately.</strong> CDE + GOLD + AU are all Clock A (gold, rates, dollar). FCX + UUUU + COPX are Clock B (growth, China, buildout). It's easy to accidentally triple the same bet across three tickers.</div></div>
+  <div class="ritem"><div class="rnum">06</div><div class="rtext"><strong>Watch rates as closely as policy.</strong> 10Y at 4.69%, cooler CPI/PPI pushing hikes out. UUUU is the most rate-sensitive name in the plan — a hawkish turn hurts it more than a China deal would.</div></div>
+  <div class="ritem"><div class="rnum">07</div><div class="rtext"><strong>Still not a hedge.</strong> Everything above is equity. In a liquidity event these correlate toward 1 regardless of underlying commodity. A non-equity sleeve (CPER, physical gold, PDBC) is the eventual fix — probably not yet practical at current size.</div></div>
+</div>
+
+<div class="spacer"></div>
+<div class="note">
+  <strong>Standard caveat, stated once:</strong> this is the framework applied to your own stated criteria — not investment advice, and I'm not a financial advisor. Percentages are structural guidance for how the tiers fit together, not recommendations about how much money to commit. Every entry price, expense ratio, and fund status above should be verified live before acting; several data points in this file are days to weeks old.
+</div>
+
+<div class="spacer"></div>
+</body>
+</html>
